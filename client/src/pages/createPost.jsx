@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import { getRandomPrompt } from "../utils";
 import { Loader, FormField } from "../components";
@@ -16,15 +17,63 @@ const CreatePost = () => {
   const [generatingImg, setGeneratingImg] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {};
+  // FORM submit handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (form.name && form.prompt && form.photo) {
+      try {
+        setLoading(true);
+        const { data } = await axios.post(
+          "http://localhost:8080/api/v1/post/",
+          form
+        );
+        console.log(data);
+        navigate("/");
+      } catch (error) {
+        console.log("BACKEND ERROR", error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      alert("Please generate an Image");
+    }
+  };
+
+  // FORM fields setter
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+  // FORM fields setter
   const handleSurpriseMe = () => {
     const randomPrompt = getRandomPrompt(form.prompt);
     setForm({ ...form, prompt: randomPrompt });
   };
-  const generateImage = () => {};
+
+  // GENERATE IMAGE // OPENAI
+  const generateImage = async () => {
+    if (form.prompt) {
+      try {
+        setGeneratingImg(true);
+        const { data } = await axios.post(
+          "http://localhost:8080/api/v1/dalle/generate",
+          { prompt: form["prompt"] }
+        );
+        console.log(data);
+        setForm({
+          ...form,
+          photo: `data:image/jpeg;base64,${data.photo}`,
+        });
+        f;
+      } catch (error) {
+        console.log("Error Fetching from OPEN-AI, Check your API KEY", error);
+      } finally {
+        setGeneratingImg(false);
+      }
+    } else {
+      alert("Please enter a prompt");
+    }
+  };
 
   return (
     <section className="max-w-7xl mx-auto">

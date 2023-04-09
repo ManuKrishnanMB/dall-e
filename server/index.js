@@ -1,17 +1,20 @@
 import express from "express";
 import cors from "cors";
 import * as dotenv from "dotenv";
-import mongoose from "mongoose";
 
 import { connectDB } from "./Mongodb/connectDB.js";
+import dalleRouter from "./Routes/dalleRoutes.js";
+import postRouter from "./Routes/postRoutes.js";
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 
-app.get("/", async (req, res) => res.send("hello"));
+app.use("/api/v1/post", postRouter);
+app.use("/api/v1/dalle", dalleRouter);
+app.get("/", async (req, res) => res.send("hello from DALL-E"));
 
 const startServer = async () => {
   try {
@@ -19,6 +22,7 @@ const startServer = async () => {
       "<PASSWORD>",
       process.env["DATABASE_PASSWORD"]
     );
+    connectDB(url);
   } catch (error) {
     console.log(error);
   }
